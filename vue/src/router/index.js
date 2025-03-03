@@ -8,14 +8,11 @@ import LogoutView from '../views/LogoutView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import ServicesView from '../views/ServicesView.vue'; 
 import BookingView from '../views/BookingView.vue';
+import MyBookingsView from '../views/MyBookingsView.vue';
 
 /**
- * The Vue Router is used to "direct" the browser to render a specific view component
- * inside of App.vue depending on the URL.
- *
- * It also detects whether or not a route requires authentication.
- * If the user has not yet authenticated (and needs to), they are redirected to /login.
- * Otherwise, they can access the requested page.
+ * The Vue Router is used to navigate between pages dynamically in a Vue SPA.
+ * It also ensures protected routes require authentication.
  */
 
 const routes = [
@@ -39,6 +36,12 @@ const routes = [
     path: "/book/:service",
     name: "book",
     component: BookingView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: "/my-bookings",
+    name: "myBookings",
+    component: MyBookingsView,
     meta: { requiresAuth: true }
   },
   {
@@ -67,25 +70,21 @@ const routes = [
   }
 ];
 
-// Create the router
+// Create the router instance
 const router = createRouter({
   history: createWebHistory(),
-  routes: routes
+  routes
 });
 
+// Navigation guard to check authentication before entering a route
 router.beforeEach((to) => {
-  // Get the Vuex store
-  const store = useStore();
+  const store = useStore(); // Get Vuex store
 
-  // Determine if the route requires authentication
-  const requiresAuth = to.matched.some(x => x.meta.requiresAuth);
+  const requiresAuth = to.matched.some(route => route.meta.requiresAuth);
 
-  // If authentication is required but the user is not logged in, redirect to "/login"
-  if (requiresAuth && store.state.token === '') {
+  if (requiresAuth && !store.state.token) {
     return { name: "login" };
   }
-
-  // Otherwise, proceed as normal
 });
 
 export default router;
